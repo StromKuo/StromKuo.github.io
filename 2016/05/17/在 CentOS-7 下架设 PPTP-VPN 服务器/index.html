@@ -1,0 +1,736 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Linux,VPN,CentOS 7,功夫网,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0">
+
+
+
+
+
+
+<meta name="description" content="本文介绍了如何在 CentOS 7 下，通过使用 yum 软件仓库的 pptpd 守护进程架设自己的 PPTP VPN 服务器。 VPS我用的是 Vultr VPS，所以文中的操作都是我基于 Vultr VPS 进行的，经测试我的 VPN 也是正常连接的。不同 VPS 提供商的设置可能有所区别，仅供参考。 架设 VPN 服务器安装所需的包 yum install -y pptpd iptables">
+<meta name="keywords" content="Linux,VPN,CentOS 7,功夫网">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 CentOS 7 下架设 PPTP VPN 服务器">
+<meta property="og:url" content="http://yoursite.com/2016/05/17/在 CentOS-7 下架设 PPTP-VPN 服务器/index.html">
+<meta property="og:site_name" content="Strom&#39;s Blog">
+<meta property="og:description" content="本文介绍了如何在 CentOS 7 下，通过使用 yum 软件仓库的 pptpd 守护进程架设自己的 PPTP VPN 服务器。 VPS我用的是 Vultr VPS，所以文中的操作都是我基于 Vultr VPS 进行的，经测试我的 VPN 也是正常连接的。不同 VPS 提供商的设置可能有所区别，仅供参考。 架设 VPN 服务器安装所需的包 yum install -y pptpd iptables">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-03-27T18:06:18.421Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在 CentOS 7 下架设 PPTP VPN 服务器">
+<meta name="twitter:description" content="本文介绍了如何在 CentOS 7 下，通过使用 yum 软件仓库的 pptpd 守护进程架设自己的 PPTP VPN 服务器。 VPS我用的是 Vultr VPS，所以文中的操作都是我基于 Vultr VPS 进行的，经测试我的 VPN 也是正常连接的。不同 VPS 提供商的设置可能有所区别，仅供参考。 架设 VPN 服务器安装所需的包 yum install -y pptpd iptables">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 在 CentOS 7 下架设 PPTP VPN 服务器 | Strom's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Strom's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                在 CentOS 7 下架设 PPTP VPN 服务器
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-17T14:22:33+08:00" content="2016-05-17">
+              2016-05-17
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/17/在 CentOS-7 下架设 PPTP-VPN 服务器/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/05/17/在 CentOS-7 下架设 PPTP-VPN 服务器/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文介绍了如何在 CentOS 7 下，通过使用 yum 软件仓库的 pptpd 守护进程架设自己的 PPTP VPN 服务器。</p>
+<h2 id="VPS"><a href="#VPS" class="headerlink" title="VPS"></a>VPS</h2><p>我用的是 <a href="http://www.vultr.com/?ref=6865072" target="_blank" rel="noopener">Vultr</a> VPS，所以文中的操作都是我基于 <a href="http://www.vultr.com/?ref=6865072" target="_blank" rel="noopener">Vultr</a> VPS 进行的，经测试我的 VPN 也是正常连接的。不同 VPS 提供商的设置可能有所区别，仅供参考。</p>
+<h2 id="架设-VPN-服务器"><a href="#架设-VPN-服务器" class="headerlink" title="架设 VPN 服务器"></a>架设 VPN 服务器</h2><p>安装所需的包</p>
+<pre><code>yum install -y pptpd iptables-services
+</code></pre><p>配置 PPTP 的设置。”ppp”配置文件对 <code>pptpd</code> 很重要。首先，如下配置 <code>/etc/ppp/options.pptpd</code> 文件，可以根据需要更改 DNS 服务器。</p>
+<pre><code># Network and Routing
+
+# If pppd is acting as a server for Microsoft Windows clients, this
+# option allows pppd to supply one or two DNS (Domain Name Server)
+# addresses to the clients.  The first instance of this option
+# specifies the primary DNS address; the second instance (if given)
+# specifies the secondary DNS address.
+#ms-dns 10.0.0.1
+#ms-dns 10.0.0.2
+ms-dns 8.8.8.8
+ms-dns 8.8.4.4
+</code></pre><p>下一步，通过编辑 <code>/etc/ppp/chap-secrets</code> 文件添加VPN服务器的用户。即连接 VPN 所用的用户名和密码。client为帐号，server是pptpd服务，secret是密码，*表示是分配任意ip。只需修改账号和密码就可以。</p>
+<pre><code># Secrets for authentication using CHAP
+# client  server  secret    IP addresses
+vultr1  pptpd   P@$$w0rd2  *
+vultr2  pptpd   P@$$w0rd2  *
+</code></pre><p>通过编辑 <code>/etc/pptpd.conf</code> 配置 <code>pptpd</code> 守护进程。下面的配置一般不需要修改，也可以根据用户数量需要修改 IP 地址范围。</p>
+<pre><code>#localip 192.168.0.1
+#remoteip 192.168.0.234-238,192.168.0.245
+localip 192.168.0.1
+remoteip 192.168.0.234-238,192.168.0.245
+</code></pre><p>下面编辑 <code>/etc/sysctl.conf</code> ，末尾添加一行 <code>net.ipv4.ip_forward = 1</code> 保存，来启用IP转发(IP forwarding)。之后运行 <code>sysctl -p</code> 命令使内核修改生效。</p>
+<pre><code># System default settings live in /usr/lib/sysctl.d/00-system.conf.
+# To override those settings, enter new settings here, or in an /etc/sysctl.d/&lt;name&gt;.conf file
+#
+# For more information, see sysctl.conf(5) and sysctl.d(5).
+net.ipv4.ip_forward = 1
+</code></pre><p>我想用 iptables 作为防火墙，用下面的命令停止并隐藏 CentOS 7 中的默认防火墙服务 firewalld</p>
+<pre><code>systemctl stop firewalld
+systemctl mask firewalld
+</code></pre><p>由于开始时已经安装了 iptables，直接运行下面的命令启用 iptables</p>
+<pre><code>systemctl enable iptables
+</code></pre><p>向 filter 表的 INPUT 链以及 nat 表的 POSTROUTING 链添加规则</p>
+<pre><code>iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 1723 -j ACCEPT
+iptables -t nat -A POSTROUTING -o eth0 -s 192.168.0.0/24 -j MASQUERADE
+</code></pre><p>保存规则</p>
+<pre><code>service iptables save
+</code></pre><p>最后，重启一下pptpd服务和iptables服务</p>
+<pre><code>systemctl restart iptables
+systemctl restart pptpd
+</code></pre><p>这样 PPTP VPN 服务器就搭建完成了。可以通过 PC 或移动设备连接。</p>
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/VPN/" rel="tag">#VPN</a>
+          
+            <a href="/tags/CentOS-7/" rel="tag">#CentOS 7</a>
+          
+            <a href="/tags/功夫网/" rel="tag">#功夫网</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/15/通过-FontLink-改善-Windows-下西文编程字体的中文显示/" rel="next" title="通过 FontLink 改善 Windows 下西文编程字体的中文显示">
+                <i class="fa fa-chevron-left"></i> 通过 FontLink 改善 Windows 下西文编程字体的中文显示
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/12/Cocos2d-x 中的四个坐标系转换方法/" rel="prev" title="Cocos2d-x 中的四个坐标系转换方法">
+                Cocos2d-x 中的四个坐标系转换方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="Strom">
+          <p class="site-author-name" itemprop="name">Strom</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#VPS"><span class="nav-number">1.</span> <span class="nav-text">VPS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#架设-VPN-服务器"><span class="nav-number">2.</span> <span class="nav-text">架设 VPN 服务器</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Strom</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  
+
+
+  
+
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+    <script type="text/javascript">
+      var disqus_shortname = 'stromkuo';
+      var disqus_identifier = '2016/05/17/在 CentOS-7 下架设 PPTP-VPN 服务器/';
+      var disqus_title = '在 CentOS 7 下架设 PPTP VPN 服务器';
+      var disqus_url = 'http://yoursite.com/2016/05/17/在 CentOS-7 下架设 PPTP-VPN 服务器/';
+
+      function run_disqus_script(disqus_script){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      }
+
+      run_disqus_script('count.js');
+      
+        run_disqus_script('embed.js');
+      
+    </script>
+  
+
+
+
+  
+  
+
+  
+  
+
+
+</body>
+</html>

@@ -1,0 +1,798 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="Cocos2d-x,MusicXML,XML,音乐游戏,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0">
+
+
+
+
+
+
+<meta name="description" content="本人水平有限，本文主要是记录自己的学习过程，仅供参考。 最近在做的一款游戏是音乐类游戏，引擎版本用的 Cocos2d-X v3.5 。游戏中五线谱按照音乐的节奏在屏幕上方滚动，玩家通过音乐旋律以及五线谱的指示有节奏的敲击按键来得分。之前的方案是用 Tiled Map 手动拼出乐谱层，在对象层上设置每个音符对象的若干数据，这样整首乐谱的信息就都可以通过 Map 文件得到了。但是显然这种方法费时费力，">
+<meta name="keywords" content="Cocos2d-x,MusicXML,XML,音乐游戏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MusicXML 在音乐游戏中的应用---MusicXML 的 &quot;Hello World&quot;详解">
+<meta property="og:url" content="http://yoursite.com/2016/01/26/MusicXML 在音乐游戏中的应用-MusicXML 的 Hello World详解/index.html">
+<meta property="og:site_name" content="Strom&#39;s Blog">
+<meta property="og:description" content="本人水平有限，本文主要是记录自己的学习过程，仅供参考。 最近在做的一款游戏是音乐类游戏，引擎版本用的 Cocos2d-X v3.5 。游戏中五线谱按照音乐的节奏在屏幕上方滚动，玩家通过音乐旋律以及五线谱的指示有节奏的敲击按键来得分。之前的方案是用 Tiled Map 手动拼出乐谱层，在对象层上设置每个音符对象的若干数据，这样整首乐谱的信息就都可以通过 Map 文件得到了。但是显然这种方法费时费力，">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.musicxml.com/wp-content/uploads/2012/11/xml2001fig1.gif">
+<meta property="og:updated_time" content="2017-03-27T18:06:18.406Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MusicXML 在音乐游戏中的应用---MusicXML 的 &quot;Hello World&quot;详解">
+<meta name="twitter:description" content="本人水平有限，本文主要是记录自己的学习过程，仅供参考。 最近在做的一款游戏是音乐类游戏，引擎版本用的 Cocos2d-X v3.5 。游戏中五线谱按照音乐的节奏在屏幕上方滚动，玩家通过音乐旋律以及五线谱的指示有节奏的敲击按键来得分。之前的方案是用 Tiled Map 手动拼出乐谱层，在对象层上设置每个音符对象的若干数据，这样整首乐谱的信息就都可以通过 Map 文件得到了。但是显然这种方法费时费力，">
+<meta name="twitter:image" content="http://www.musicxml.com/wp-content/uploads/2012/11/xml2001fig1.gif">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> MusicXML 在音乐游戏中的应用---MusicXML 的 "Hello World"详解 | Strom's Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Strom's Blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                MusicXML 在音乐游戏中的应用---MusicXML 的 "Hello World"详解
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-01-26T22:29:44+08:00" content="2016-01-26">
+              2016-01-26
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/01/26/MusicXML 在音乐游戏中的应用-MusicXML 的 Hello World详解/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/01/26/MusicXML 在音乐游戏中的应用-MusicXML 的 Hello World详解/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本人水平有限，本文主要是记录自己的学习过程，仅供参考。</p>
+<p>最近在做的一款游戏是音乐类游戏，引擎版本用的 Cocos2d-X v3.5 。游戏中五线谱按照音乐的节奏在屏幕上方滚动，玩家通过音乐旋律以及五线谱的指示有节奏的敲击按键来得分。之前的方案是用 Tiled Map 手动拼出乐谱层，在对象层上设置每个音符对象的若干数据，这样整首乐谱的信息就都可以通过 Map 文件得到了。但是显然这种方法费时费力，自然想到寻找其他方案来代替。</p>
+<h2 id="乐理知识"><a href="#乐理知识" class="headerlink" title="乐理知识"></a>乐理知识</h2><p>在这之前需要了解一些乐理知识以便更好的学习 MusicXML ，只需要非常基础的乐理知识就够了。不赘述。</p>
+<h2 id="什么是-MusicXML"><a href="#什么是-MusicXML" class="headerlink" title="什么是 MusicXML"></a>什么是 MusicXML</h2><blockquote>
+<p>MusicXML(Music Extensible Markup Language 音乐扩展标记语言)是一个开放的基于XML 的音乐符号文件格式,由Reccordare 公司开发，该技术源于几个现有的基于学术上的关键技术和想法，比如Walter Hewlett 的MuseData 和David Huron 的Humdrum，他被设计用来做为乐谱信息的交换格式，特别是在不同的乐谱显示软件的之间进行交换。MusicXML 将整体乐曲元素和属性信息表示为一份XML 文档,他克服了另外两种格式—-NIFF 格式(基于图片)和SMDL 格式(过于庞大)的兼容性差,结构复杂等许多缺点，目前他已经被很多应用软件的支持。</p>
+</blockquote>
+<div align="right">—<a href="https://zh.wikipedia.org/zh-sg/MusicXML" target="_blank" rel="noopener">Wikipedia</a></div>
+
+<h2 id="MusicXML-的-“Hello-World”"><a href="#MusicXML-的-“Hello-World”" class="headerlink" title="MusicXML 的 “Hello World”"></a>MusicXML 的 “Hello World”</h2><p>这部分翻译自<a href="http://www.musicxml.com/tutorial/hello-world/" target="_blank" rel="noopener">官方文档</a>（渣翻）</p>
+<p>Brian Kernighan 和 Dennis Ritchie 推行了当学习一门新的编程语言时先写一个程序打印”hello, world”这一做法。它是测试如何构建一个程序并显示其结果的最小的程序。</p>
+<p>在 MusicXML 中，一首有”hello,World”歌词的歌实际上要比我们期望的简单的 MusicXML 文件更复杂。我们要让事情简单一些：一个只包含一个全音符中央C的 4/4 拍小节：<br><img src="http://www.musicxml.com/wp-content/uploads/2012/11/xml2001fig1.gif" alt></p>
+<p>MusicXML 中是这个样子：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;
+&lt;!DOCTYPE score-partwise PUBLIC
+    &quot;-//Recordare//DTD MusicXML 3.0 Partwise//EN&quot;
+    &quot;http://www.musicxml.org/dtds/partwise.dtd&quot;&gt;
+&lt;score-partwise version=&quot;3.0&quot;&gt;
+  &lt;part-list&gt;
+    &lt;score-part id=&quot;P1&quot;&gt;
+      &lt;part-name&gt;Music&lt;/part-name&gt;
+    &lt;/score-part&gt;
+  &lt;/part-list&gt;
+  &lt;part id=&quot;P1&quot;&gt;
+    &lt;measure number=&quot;1&quot;&gt;
+      &lt;attributes&gt;
+        &lt;divisions&gt;1&lt;/divisions&gt;
+        &lt;key&gt;
+          &lt;fifths&gt;0&lt;/fifths&gt;
+        &lt;/key&gt;
+        &lt;time&gt;
+          &lt;beats&gt;4&lt;/beats&gt;
+          &lt;beat-type&gt;4&lt;/beat-type&gt;
+        &lt;/time&gt;
+        &lt;clef&gt;
+          &lt;sign&gt;G&lt;/sign&gt;
+          &lt;line&gt;2&lt;/line&gt;
+        &lt;/clef&gt;
+      &lt;/attributes&gt;
+      &lt;note&gt;
+        &lt;pitch&gt;
+          &lt;step&gt;C&lt;/step&gt;
+          &lt;octave&gt;4&lt;/octave&gt;
+        &lt;/pitch&gt;
+        &lt;duration&gt;4&lt;/duration&gt;
+        &lt;type&gt;whole&lt;/type&gt;
+      &lt;/note&gt;
+    &lt;/measure&gt;
+  &lt;/part&gt;
+&lt;/score-partwise&gt;
+</code></pre><p>我们依次来看各个部分：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;
+</code></pre><p>这是所有 XML 文档都有的 XML 声明。我们指定了 “UTF-8” 编码格式。这是有 ASCII 子集的 Unicode 版本。设置 standalone 的值为 “no” 意思是我们在另一个文件外部定义文档。</p>
+<pre><code>&lt;!DOCTYPE score-partwise PUBLIC
+    &quot;-//Recordare//DTD MusicXML 3.0 Partwise//EN&quot;
+    &quot;http://www.musicxml.org/dtds/partwise.dtd&quot;&gt;
+</code></pre><p>这里是说我们在哪里使用 MusicXML。我们为 DTD 使用了一个包括一个 Internet 位置的 Public 声明。声明中的 URL 只是为了引用。大多数使用 MusicXML 文件的应用都会想要在用户的机器上安装一个 MusicXML DTDs 的本地拷贝。在你的 XML解析器中使用实体解析器来验证本地拷贝，而不是通过网络缓慢地读取 DTDs。如果你的应用想要验证 MusicXML XSD 而不是 DTD，你可以在你的 XML 解析器中用实体解析器来完成。当写入 MusicXML 时，对于所有基于 DTD 或 XSD 的应用来说，写入 DOCTYPE 使得验证 MusicXML 更简单。</p>
+<pre><code>&lt;score-partwise version=&quot;3.0&quot;&gt;
+</code></pre><p>这是根文档类型。元素 score-partwise 是由几部分构成，而每部分由小节构成。这里同样有一个由小节构成的 score-timewise 可选元素，而每小节又是由几部分构成。这个 version 属性让程序更容易分辨出当前使用的 MusicXML 版本。如果你写的是 MusicXML 1.0 文件，那你就不用管它了。</p>
+<pre><code>&lt;part-list&gt;
+  &lt;score-part id=&quot;P1&quot;&gt;
+    &lt;part-name&gt;Part 1&lt;/part-name&gt;
+  &lt;/score-part&gt;
+&lt;/part-list&gt;
+</code></pre><p>MusicXML 开始于一个列出了乐谱不同音乐部分的 header（译注：就是上面这段代码） 。上面的例子是尽可能最小的 part-list：它包含了一个拥有 id 属性和 part-name 元素的 score-part 元素。</p>
+<pre><code>&lt;part id=&quot;P1&quot;&gt;
+</code></pre><p>现在我们开始文档的第一部分（这个例子中的唯一一部分）。这里的 id 属性必须引用上面那个 header 中 score-part 元素的 id 属性。</p>
+<pre><code>&lt;measure number=&quot;1&quot;&gt;
+</code></pre><p>我们开始第一部分第一小节。</p>
+<pre><code>&lt;attributes&gt;
+</code></pre><p>attributes 元素包含了解析这部分音符和音乐数据所需的关键信息。</p>
+<pre><code>&lt;divisions&gt;1&lt;/divisions&gt;
+</code></pre><p>MusicXML 中每个音符都有 duration 元素。这个 division 元素为 duration 元素提供了小节的单元，小节的单元以每个四分音符的 divisions 为标准。因为在这里整个文件只有一个全音符，所以我们不用划分四分音符，于是我们把 divisions 的值设为了 1。 音乐上的时值通常用分数表示，比如四分音符、八分音符之类的。MusicXML 的时值也是分数。由于分母很少需要改变，所以在表示 divisions 元素时我们把它分离开不管它。这样就只有分子与每个单独的音符相关。这与 MIDI 中音符时值的表示相似。</p>
+<pre><code>&lt;key&gt;
+  &lt;fifths&gt;0&lt;/fifths&gt;
+&lt;/key&gt;
+</code></pre><p>key 元素用于表示调号。在这我们是C大调调号没有升降号，所以 fifths 元素是 0 。如果我们是 D大调调号有两个升号， fifths 就应该是 2 。如果我们是 F大调调号有一个降号，那么 fifths 应该是 -1 。 “fifths” 这个名字来自五度圈（译注：这个东西有助于理解<a href="https://en.wikipedia.org/wiki/Circle_of_fifths" target="_blank" rel="noopener">Circle of fifths</a>）。它让我们可以用一个元素表示标准调号，而不是用不同的元素表示升降号。</p>
+<pre><code>&lt;time&gt;
+  &lt;beats&gt;4&lt;/beats&gt;
+  &lt;beat-type&gt;4&lt;/beat-type&gt;
+&lt;/time&gt;
+</code></pre><p>time 元素表示拍号。它的两个构成元素 beats 和 beat-type 分别是拍号的分子和分母。</p>
+<pre><code>&lt;clef&gt;
+  &lt;sign&gt;G&lt;/sign&gt;
+  &lt;line&gt;2&lt;/line&gt;
+&lt;/clef&gt;
+</code></pre><p>MusicXML 允许许多不同的谱号，其中包括许多今天不再用的。这里，标准的高音谱号用一个在五线谱第二条线上的G谱号表示（也就是说五线谱从下往上第二条线是G）。</p>
+<pre><code>&lt;/attributes&gt;
+&lt;note&gt;
+</code></pre><p>我们已经完成了 attributes 元素，准备开始第一个音符。</p>
+<pre><code>&lt;pitch&gt;
+  &lt;step&gt;C&lt;/step&gt;
+  &lt;octave&gt;4&lt;/octave&gt;
+&lt;/pitch&gt;
+</code></pre><p>pitch 元素必须有一个 step 和一个 octave 元素。如果涉及到了升降号，还可以有一个可选的 alter 元素。这个元素表示声音，所以如果使用了 alter 元素那么 alter 元素必须总是被包含，即使升降号已经在调号中了。在此例中，我们没有升降号。step 是 C。octaved 的 4 表示 octave 开始于中央C。因此这个音符是中央C。</p>
+<pre><code>&lt;duration&gt;4&lt;/duration&gt;
+</code></pre><p>我们的 divisions 值为 1，所以 duaration 的 4 是 4 个四分音符的长度。</p>
+<pre><code>&lt;type&gt;whole&lt;/type&gt;
+</code></pre><p>type 元素告诉我们这是个全音符。在此例中你可能可以通过 duration 推导出来，但是如果应用是乐谱和执行数据分开表示的直接给出来更容易操作。不管怎样，在实际中乐谱和执行的数据并不总是匹配在一起的。比如，你想要接近爵士乐那种摇摆飘忽的感觉你就不会用相等长度的八分音符，而是让音符时值在八分音符的基础上浮动，而音符本身还是八分音符。Bach 的音乐就包含时值并不标准的音符。duration 元素应该反映目的时值，不是有偏差的时值，尤其是在特定的音乐中。note 元素有 attack 和 release 属性，可以从乐谱上表示的时值出发，改变音符的开始和结束时间。</p>
+<pre><code>&lt;/note&gt;
+</code></pre><p>我们完成了 note 元素。</p>
+<pre><code>&lt;/measure&gt;
+</code></pre><p>我们完成了 measure 元素。</p>
+<pre><code>&lt;/part&gt;
+</code></pre><p>我们完成了 part 元素。</p>
+<pre><code>&lt;/score-partwise&gt;
+</code></pre><p>这样整个乐谱就完成了。</p>
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Cocos2d-x/" rel="tag">#Cocos2d-x</a>
+          
+            <a href="/tags/MusicXML/" rel="tag">#MusicXML</a>
+          
+            <a href="/tags/XML/" rel="tag">#XML</a>
+          
+            <a href="/tags/音乐游戏/" rel="tag">#音乐游戏</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/21/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/02/06/MusicXML 在音乐游戏中的应用-Cocos2d-x xml解析/" rel="prev" title="MusicXML 在音乐游戏中的应用---Cocos2d-x xml解析">
+                MusicXML 在音乐游戏中的应用---Cocos2d-x xml解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="Strom">
+          <p class="site-author-name" itemprop="name">Strom</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#乐理知识"><span class="nav-number">1.</span> <span class="nav-text">乐理知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是-MusicXML"><span class="nav-number">2.</span> <span class="nav-text">什么是 MusicXML</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MusicXML-的-“Hello-World”"><span class="nav-number">3.</span> <span class="nav-text">MusicXML 的 “Hello World”</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Strom</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  
+
+
+  
+
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+    <script type="text/javascript">
+      var disqus_shortname = 'stromkuo';
+      var disqus_identifier = '2016/01/26/MusicXML 在音乐游戏中的应用-MusicXML 的 Hello World详解/';
+      var disqus_title = 'MusicXML 在音乐游戏中的应用---MusicXML 的 "Hello World"详解';
+      var disqus_url = 'http://yoursite.com/2016/01/26/MusicXML 在音乐游戏中的应用-MusicXML 的 Hello World详解/';
+
+      function run_disqus_script(disqus_script){
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      }
+
+      run_disqus_script('count.js');
+      
+        run_disqus_script('embed.js');
+      
+    </script>
+  
+
+
+
+  
+  
+
+  
+  
+
+
+</body>
+</html>
